@@ -11,6 +11,9 @@ import "@openzeppelin/contracts/utils/Address.sol";
 
 import "./libraries/Constants.sol";
 import "./libraries/Offer.sol";
+
+import "./interfaces/IBet.sol";
+
 /// @title Hackabet contract
 /// @notice
 contract Hackabet is Ownable, EIP712 {
@@ -69,5 +72,30 @@ contract Hackabet is Ownable, EIP712 {
         }
 
         return address(0);
+    }
+
+    function createAndTake(
+        bytes32 hashVal,
+        Offer.Data memory offer,
+        address taker,
+        bytes32 takeParams
+    )
+        internal
+        returns (
+            address,
+            uint256,
+            uint256
+        )
+    {
+        address newContr = Clones.cloneDeterministic(betImplementation, hashVal);
+
+        (uint256 makerBetAmount, uint256 takerBetAmount) = IBet(newContr).initAndTake(
+            taker,
+            takeParams,
+            offer.volume,
+            offer.details
+        );
+
+        return (newContr, makerBetAmount, takerBetAmount);
     }
 }
