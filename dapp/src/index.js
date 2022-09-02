@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
 import { Mainnet, DAppProvider, useEtherBalance, useEthers, Config, Goerli } from '@usedapp/core'
 import { getDefaultProvider } from 'ethers'
 
@@ -10,7 +11,10 @@ import 'bootstrap/dist/css/bootstrap.css';
 import App from './App';
 
 // import reportWebVitals from './reportWebVitals';
-
+const client = new ApolloClient({
+  uri: 'https://api.thegraph.com/subgraphs/name/cryptoanonymousdev/erc-test-subgraph',
+  cache: new InMemoryCache(),
+});
 
 const config = {
   readOnlyChainId: Mainnet.chainId,
@@ -21,9 +25,12 @@ const config = {
 }
 
 ReactDOM.render(
-  <DAppProvider config={config}>
-    <App />
-  </DAppProvider>,
+  
+    <DAppProvider config={config}>
+      <ApolloProvider client={client}>
+      <App />
+      </ApolloProvider>
+    </DAppProvider>,  
   document.getElementById('root')
 )
 
