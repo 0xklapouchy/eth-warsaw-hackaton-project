@@ -8,9 +8,12 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "./libraries/Constants.sol";
+import "./libraries/Offer.sol";
 /// @title Hackabet contract
 /// @notice
 contract Hackabet is Ownable, EIP712 {
+    using ECDSA for bytes32;
+
     struct User {
         uint256 availableUSD;
         uint256 revokeNonce;
@@ -46,5 +49,13 @@ contract Hackabet is Ownable, EIP712 {
         require(user.revokeNonce < newRevokeNonce, "To low revoke nonce");
 
         user.revokeNonce = newRevokeNonce;
+    }
+
+    function recoverMaker(Offer.Data memory offer, bytes memory signature) internal view returns (address) {
+        bytes32 typeHash = Offer.fullTypeHash();
+        return
+            _hashTypedDataV4(keccak256(abi.encode(typeHash, offer.volume, offer.nonce, offer.deadline))).recover(
+                signature
+            );
     }
 }
