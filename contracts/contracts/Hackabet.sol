@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/proxy/Clones.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 import "./libraries/Constants.sol";
 import "./libraries/Offer.sol";
@@ -57,5 +59,15 @@ contract Hackabet is Ownable, EIP712 {
             _hashTypedDataV4(keccak256(abi.encode(typeHash, offer.volume, offer.nonce, offer.deadline))).recover(
                 signature
             );
+    }
+
+    function contractFromOfferHash(bytes32 hashVal) public view returns (address) {
+        address contr = Clones.predictDeterministicAddress(betImplementation, hashVal);
+
+        if (Address.isContract(contr)) {
+            return contr;
+        }
+
+        return address(0);
     }
 }
