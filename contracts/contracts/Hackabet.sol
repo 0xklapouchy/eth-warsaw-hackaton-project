@@ -9,6 +9,13 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 /// @title Hackabet contract
 /// @notice
 contract Hackabet is Ownable, EIP712 {
+    struct User {
+        uint256 availableUSD;
+        uint256 revokeNonce;
+    }
+
+    mapping(address => User) public users;
+
     // solhint-disable-next-line no-empty-blocks
     constructor() EIP712("Hackabet", "1") {}
 }
