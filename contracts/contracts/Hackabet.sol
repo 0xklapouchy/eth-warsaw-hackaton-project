@@ -37,4 +37,12 @@ contract Hackabet is Ownable, EIP712 {
 
         IERC20(Constants.USDC).transfer(msg.sender, amount);
     }
+
+    function revoke(uint256 newRevokeNonce) external {
+        User storage user = users[msg.sender];
+
+        require(user.revokeNonce < newRevokeNonce, "To low revoke nonce");
+
+        user.revokeNonce = newRevokeNonce;
+    }
 }
