@@ -18,6 +18,8 @@ contract Hackabet is Ownable, EIP712 {
 
     mapping(address => User) public users;
 
+    address public betImplementation;
+
     // solhint-disable-next-line no-empty-blocks
     constructor() EIP712("Hackabet", "1") {}
 
