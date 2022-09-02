@@ -56,6 +56,39 @@ contract Hackabet is Ownable, EIP712 {
         user.revokeNonce = newRevokeNonce;
     }
 
+    function takeOffer(
+        Offer.Data memory offer,
+        bytes32 takeParams,
+        bytes memory signature
+    ) external returns (address contr) {
+        address maker = recoverMaker(offer, signature);
+        address taker = msg.sender;
+
+        require(offer.nonce > users[maker].revokeNonce, "offer revoked");
+        require(offer.deadline > block.timestamp, "offer expired");
+
+        bytes32 hashVal = Offer.hashVal(offer.details, maker);
+
+        contr = contractFromOfferHash(hashVal);
+
+        uint256 makerBetAmount;
+        uint256 takerBetAmount;
+
+        if (contr == address(0)) {
+            (contr, makerBetAmount, takerBetAmount) = createAndTake(hashVal, offer, taker, takeParams);
+        } else {
+            (makerBetAmount, takerBetAmount) = IBet(contr).take(taker, takeParams, offer.volume, offer.details);
+        }
+
+        require(makerBetAmount <= users[maker].availableUSD, "collateral not available");
+        unchecked {
+            users[maker].availableUSD -= makerBetAmount;
+        }
+
+        IERC20(Constants.USDC).transferFrom(taker, contr, takerBetAmount);
+        IERC20(Constants.USDC).transfer(contr, makerBetAmount);
+    }
+
     function recoverMaker(Offer.Data memory offer, bytes memory signature) internal view returns (address) {
         bytes32 typeHash = Offer.fullTypeHash();
         return
