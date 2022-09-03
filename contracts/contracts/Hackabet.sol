@@ -112,7 +112,7 @@ contract Hackabet is Ownable, EIP712 {
         IERC20(usdc).transfer(contr, amount);
     }
 
-    function recoverMaker(Offer.Data memory offer, bytes memory signature) internal view returns (address) {
+    function recoverMaker(Offer.Data memory offer, bytes memory signature) public view returns (address) {
         bytes32 typeHash = Offer.fullTypeHash();
         return
             _hashTypedDataV4(keccak256(abi.encode(typeHash, offer.volume, offer.nonce, offer.deadline))).recover(
