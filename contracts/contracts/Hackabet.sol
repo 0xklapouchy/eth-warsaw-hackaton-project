@@ -28,12 +28,18 @@ contract Hackabet is Ownable, EIP712 {
 
     address public betImplementation;
 
+    event BalanceChanged(address indexed maker, uint256 amount);
+    event Revoked(address indexed maker, uint256 newRevokeNonce);
+    event BetTaken(address indexed maker, address indexed taker, uint256 amount, bytes details);
+
     // solhint-disable-next-line no-empty-blocks
     constructor() EIP712("Hackabet", "1") {}
 
     function deposit(uint256 amount) external {
         User storage user = users[msg.sender];
         user.availableUSD += amount;
+
+        emit BalanceChanged(msg.sender, user.availableUSD);
 
         IERC20(Constants.USDC).transferFrom(msg.sender, address(this), amount);
     }
@@ -45,6 +51,8 @@ contract Hackabet is Ownable, EIP712 {
 
         user.availableUSD -= amount;
 
+        emit BalanceChanged(msg.sender, user.availableUSD);
+
         IERC20(Constants.USDC).transfer(msg.sender, amount);
     }
 
@@ -54,6 +62,8 @@ contract Hackabet is Ownable, EIP712 {
         require(user.revokeNonce < newRevokeNonce, "To low revoke nonce");
 
         user.revokeNonce = newRevokeNonce;
+
+        emit Revoked(msg.sender, newRevokeNonce);
     }
 
     function takeOffer(
@@ -81,6 +91,9 @@ contract Hackabet is Ownable, EIP712 {
         unchecked {
             users[maker].availableUSD -= amount;
         }
+
+        emit BalanceChanged(maker, users[maker].availableUSD);
+        emit BetTaken(maker, taker, amount, offer.details);
 
         IERC20(Constants.USDC).transferFrom(taker, contr, amount);
         IERC20(Constants.USDC).transfer(contr, amount);
