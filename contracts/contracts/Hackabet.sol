@@ -30,7 +30,14 @@ contract Hackabet is Ownable, EIP712 {
 
     event BalanceChanged(address indexed maker, uint256 amount);
     event Revoked(address indexed maker, uint256 newRevokeNonce);
-    event BetTaken(address indexed maker, address indexed taker, uint256 amount, bytes details);
+    event BetTaken(
+        address indexed maker,
+        address indexed taker,
+        address contr,
+        uint256 id,
+        uint256 amount,
+        bytes details
+    );
 
     // solhint-disable-next-line no-empty-blocks
     constructor() EIP712("Hackabet", "1") {}
@@ -95,7 +102,7 @@ contract Hackabet is Ownable, EIP712 {
         }
 
         emit BalanceChanged(maker, users[maker].availableUSD);
-        emit BetTaken(maker, taker, amount, offer.details);
+        emit BetTaken(maker, taker, contr, id, amount, offer.details);
 
         IERC20(Constants.USDC).transferFrom(taker, contr, amount);
         IERC20(Constants.USDC).transfer(contr, amount);
