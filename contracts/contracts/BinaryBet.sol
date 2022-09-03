@@ -47,8 +47,8 @@ contract BinaryBet {
     function initAndTake(
         address maker_,
         address taker,
-        uint256 volume_,
         uint256 amount,
+        uint256 volume_,
         bytes calldata detailsPacked
     ) external returns (uint256 id) {
         require(lastEnd == 0, "already initialized");
