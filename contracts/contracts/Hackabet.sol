@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./libraries/Constants.sol";
 import "./libraries/Offer.sol";
 
-import "./interfaces/IBet.sol";
+import "./interfaces/IBinaryBet.sol";
 
 /// @title Hackabet contract
 /// @notice
@@ -58,7 +58,7 @@ contract Hackabet is Ownable, EIP712 {
 
     function takeOffer(
         Offer.Data memory offer,
-        bytes32 takeParams,
+        uint256 amount,
         bytes memory signature
     ) external returns (address contr) {
         address maker = recoverMaker(offer, signature);
@@ -71,22 +71,19 @@ contract Hackabet is Ownable, EIP712 {
 
         contr = contractFromOfferHash(hashVal);
 
-        uint256 makerBetAmount;
-        uint256 takerBetAmount;
-
         if (contr == address(0)) {
-            (contr, makerBetAmount, takerBetAmount) = createAndTake(hashVal, offer, taker, takeParams);
+            contr = createAndTake(hashVal, offer, taker, amount);
         } else {
-            (makerBetAmount, takerBetAmount) = IBet(contr).take(taker, takeParams, offer.volume, offer.details);
+            IBinaryBet(contr).take(taker, amount, offer.volume, offer.details);
         }
 
-        require(makerBetAmount <= users[maker].availableUSD, "collateral not available");
+        require(amount <= users[maker].availableUSD, "collateral not available");
         unchecked {
-            users[maker].availableUSD -= makerBetAmount;
+            users[maker].availableUSD -= amount;
         }
 
-        IERC20(Constants.USDC).transferFrom(taker, contr, takerBetAmount);
-        IERC20(Constants.USDC).transfer(contr, makerBetAmount);
+        IERC20(Constants.USDC).transferFrom(taker, contr, amount);
+        IERC20(Constants.USDC).transfer(contr, amount);
     }
 
     function recoverMaker(Offer.Data memory offer, bytes memory signature) internal view returns (address) {
@@ -111,24 +108,12 @@ contract Hackabet is Ownable, EIP712 {
         bytes32 hashVal,
         Offer.Data memory offer,
         address taker,
-        bytes32 takeParams
-    )
-        internal
-        returns (
-            address,
-            uint256,
-            uint256
-        )
-    {
+        uint256 amount
+    ) internal returns (address) {
         address newContr = Clones.cloneDeterministic(betImplementation, hashVal);
 
-        (uint256 makerBetAmount, uint256 takerBetAmount) = IBet(newContr).initAndTake(
-            taker,
-            takeParams,
-            offer.volume,
-            offer.details
-        );
+        IBinaryBet(newContr).initAndTake(taker, amount, offer.volume, offer.details);
 
-        return (newContr, makerBetAmount, takerBetAmount);
+        return newContr;
     }
 }
