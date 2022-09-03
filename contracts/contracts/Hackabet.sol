@@ -47,6 +47,8 @@ contract Hackabet is Ownable, EIP712 {
     }
 
     function deposit(uint256 amount) external {
+        require(amount > 0, "zero amount");
+
         User storage user = users[msg.sender];
         user.availableUSD += amount;
 
@@ -70,7 +72,7 @@ contract Hackabet is Ownable, EIP712 {
     function revoke(uint256 newRevokeNonce) external {
         User storage user = users[msg.sender];
 
-        require(user.revokeNonce < newRevokeNonce, "To low revoke nonce");
+        require(user.revokeNonce < newRevokeNonce, "to low revoke nonce");
 
         user.revokeNonce = newRevokeNonce;
 
