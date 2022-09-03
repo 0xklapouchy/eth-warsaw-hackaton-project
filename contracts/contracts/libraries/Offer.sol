@@ -9,6 +9,7 @@ library Offer {
         uint256 volume;
         uint256 nonce;
         uint256 deadline;
+        string symbol;
         bytes details;
     }
 
@@ -17,6 +18,6 @@ library Offer {
     }
 
     function fullTypeHash() internal pure returns (bytes32) {
-        return keccak256("Offer(uint256 volume,uint256 nonce,uint256 deadline)");
+        return keccak256("Offer(uint256 volume,uint256 nonce,uint256 deadline,string symbol)");
     }
 }

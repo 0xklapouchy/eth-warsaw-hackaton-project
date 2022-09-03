@@ -35,6 +35,7 @@ contract Hackabet is Ownable, EIP712 {
         address contr,
         uint256 id,
         uint256 amount,
+        string symbol,
         bytes details
     );
 
@@ -108,7 +109,7 @@ contract Hackabet is Ownable, EIP712 {
         }
 
         emit BalanceChanged(maker, users[maker].availableUSD);
-        emit BetTaken(maker, taker, contr, id, amount, offer.details);
+        emit BetTaken(maker, taker, contr, id, amount, offer.symbol, offer.details);
 
         IERC20(usdc).transferFrom(taker, contr, amount);
         IERC20(usdc).transfer(contr, amount);
@@ -117,9 +118,11 @@ contract Hackabet is Ownable, EIP712 {
     function recoverMaker(Offer.Data memory offer, bytes memory signature) public view returns (address) {
         bytes32 typeHash = Offer.fullTypeHash();
         return
-            _hashTypedDataV4(keccak256(abi.encode(typeHash, offer.volume, offer.nonce, offer.deadline))).recover(
-                signature
-            );
+            _hashTypedDataV4(
+                keccak256(
+                    abi.encode(typeHash, offer.volume, offer.nonce, offer.deadline, keccak256(bytes(offer.symbol)))
+                )
+            ).recover(signature);
     }
 
     function contractFromOfferHash(bytes32 hashVal) public view returns (address) {
@@ -140,7 +143,7 @@ contract Hackabet is Ownable, EIP712 {
         uint256 amount
     ) internal returns (address, uint256) {
         address newContr = Clones.cloneDeterministic(betImplementation, hashVal);
-        uint256 id = IBinaryBet(newContr).initAndTake(maker, taker, amount, offer.volume, offer.details);
+        uint256 id = IBinaryBet(newContr).initAndTake(maker, taker, amount, offer.volume, offer.symbol, offer.details);
 
         return (newContr, id);
     }

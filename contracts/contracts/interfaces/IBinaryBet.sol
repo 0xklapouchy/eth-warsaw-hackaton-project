@@ -8,6 +8,7 @@ interface IBinaryBet {
         address taker,
         uint256 amount,
         uint256 volume,
+        string memory symbol,
         bytes calldata detailsPacked
     ) external returns (uint256 id);
 

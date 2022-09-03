@@ -15,12 +15,13 @@ import { toBuffer } from "ethereumjs-util";
 import { signTypedData_v4 } from "eth-sig-util";
 import { isBytes } from "ethers/lib/utils";
 
-const OFFER_TYPEHASH = utils.id("Offer(uint256 volume,uint256 nonce,uint256 deadline)");
+const OFFER_TYPEHASH = utils.id("Offer(uint256 volume,uint256 nonce,uint256 deadline,string symbol)");
 
 const Offer = [
   { name: "volume", type: "uint256" },
   { name: "nonce", type: "uint256" },
   { name: "deadline", type: "uint256" },
+  { name: "symbol", type: "string" },
 ];
 
 describe("Hackabet", () => {
@@ -104,24 +105,26 @@ describe("Hackabet", () => {
       volume: BigNumber;
       nonce: BigNumber;
       deadline: BigNumber;
+      symbol: string;
       details: BytesLike;
     };
 
-    const buildData = (chainId, verifyingContract, volume, nonce, deadline) => ({
+    const buildData = (chainId, verifyingContract, volume, nonce, deadline, symbol) => ({
       primaryType: "Offer" as const,
       types: { EIP712Domain, Offer },
       domain: { name, version, chainId, verifyingContract },
-      message: { volume, nonce, deadline },
+      message: { volume, nonce, deadline, symbol },
     });
 
     it("should recover maker as expected", async () => {
-      const data = buildData(chainId, sut.address, getBigNumber(500, 6).toString(), 1, 1);
+      const data = buildData(chainId, sut.address, getBigNumber(500, 6).toString(), 1, 1, "ETH");
       const signature = signTypedData_v4(toBuffer(maker.privateKey), { data: data });
 
       const offerData: OfferDataStruct = {
         volume: getBigNumber(500, 6),
         nonce: BigNumber.from(1),
         deadline: BigNumber.from(1),
+        symbol: "ETH",
         details: utils.id("myStructData"),
       };
 
@@ -134,6 +137,7 @@ describe("Hackabet", () => {
       volume: BigNumber;
       nonce: BigNumber;
       deadline: BigNumber;
+      symbol: string;
       details: BytesLike;
     };
 
@@ -144,11 +148,11 @@ describe("Hackabet", () => {
       window: number;
     };
 
-    const buildData = (chainId, verifyingContract, volume, nonce, deadline) => ({
+    const buildData = (chainId, verifyingContract, volume, nonce, deadline, symbol) => ({
       primaryType: "Offer" as const,
       types: { EIP712Domain, Offer },
       domain: { name, version, chainId, verifyingContract },
-      message: { volume, nonce, deadline },
+      message: { volume, nonce, deadline, symbol },
     });
 
     beforeEach(async () => {
@@ -163,7 +167,7 @@ describe("Hackabet", () => {
     it("should take offer as expected", async () => {
       const now = await latest();
 
-      const data = buildData(chainId, sut.address, getBigNumber(500, 6).toString(), 1, now.add(100).toString());
+      const data = buildData(chainId, sut.address, getBigNumber(500, 6).toString(), 1, now.add(100).toString(), "ETH");
       const signature = signTypedData_v4(toBuffer(maker.privateKey), { data: data });
 
       const betDetails: BetDetailsStruct = {
@@ -182,6 +186,7 @@ describe("Hackabet", () => {
         volume: getBigNumber(500, 6),
         nonce: BigNumber.from(1),
         deadline: now.add(100).toString(),
+        symbol: "ETH",
         details: myStructData,
       };
 
@@ -195,6 +200,7 @@ describe("Hackabet", () => {
           "0xE45a04d33AFe0568fC42553aCec8C7Dc7839f278",
           "6347041891605262682829381928223060197463835116955138866526285725750",
           getBigNumber(100, 6),
+          "ETH",
           offerData.details
         );
 
@@ -208,6 +214,7 @@ describe("Hackabet", () => {
           "0xE45a04d33AFe0568fC42553aCec8C7Dc7839f278",
           "6347041891605262682829381928223060197463835116955138866526285725751",
           getBigNumber(100, 6),
+          "ETH",
           offerData.details
         );
     });

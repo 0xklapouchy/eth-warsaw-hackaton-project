@@ -18,6 +18,7 @@ contract BinaryBet {
     uint256 public lastEnd;
     uint256 public issued;
     uint256 public volume;
+    string public symbol;
 
     Bet.Details public details;
 
@@ -49,11 +50,13 @@ contract BinaryBet {
         address taker,
         uint256 amount,
         uint256 volume_,
+        string memory symbol_,
         bytes calldata detailsPacked
     ) external returns (uint256 id) {
         require(lastEnd == 0, "already initialized");
         maker = maker_;
         volume = volume_;
+        symbol = symbol_;
         details = Bet.unpackBetDetails(detailsPacked);
 
         return take(taker, amount);
