@@ -14,8 +14,6 @@ import "./libraries/Offer.sol";
 
 import "./interfaces/IBinaryBet.sol";
 
-/// @title Hackabet contract
-/// @notice
 contract Hackabet is Ownable, EIP712 {
     using ECDSA for bytes32;
 
@@ -27,6 +25,7 @@ contract Hackabet is Ownable, EIP712 {
     mapping(address => User) public users;
 
     address public betImplementation;
+    address public usdc;
 
     event BalanceChanged(address indexed maker, uint256 amount);
     event Revoked(address indexed maker, uint256 newRevokeNonce);
@@ -42,13 +41,18 @@ contract Hackabet is Ownable, EIP712 {
     // solhint-disable-next-line no-empty-blocks
     constructor() EIP712("Hackabet", "1") {}
 
+    function init(address betImplementation_, address usdc_) external {
+        betImplementation = betImplementation_;
+        usdc = usdc_;
+    }
+
     function deposit(uint256 amount) external {
         User storage user = users[msg.sender];
         user.availableUSD += amount;
 
         emit BalanceChanged(msg.sender, user.availableUSD);
 
-        IERC20(Constants.USDC).transferFrom(msg.sender, address(this), amount);
+        IERC20(usdc).transferFrom(msg.sender, address(this), amount);
     }
 
     function withdraw(uint256 amount) external {
@@ -60,7 +64,7 @@ contract Hackabet is Ownable, EIP712 {
 
         emit BalanceChanged(msg.sender, user.availableUSD);
 
-        IERC20(Constants.USDC).transfer(msg.sender, amount);
+        IERC20(usdc).transfer(msg.sender, amount);
     }
 
     function revoke(uint256 newRevokeNonce) external {
@@ -104,8 +108,8 @@ contract Hackabet is Ownable, EIP712 {
         emit BalanceChanged(maker, users[maker].availableUSD);
         emit BetTaken(maker, taker, contr, id, amount, offer.details);
 
-        IERC20(Constants.USDC).transferFrom(taker, contr, amount);
-        IERC20(Constants.USDC).transfer(contr, amount);
+        IERC20(usdc).transferFrom(taker, contr, amount);
+        IERC20(usdc).transfer(contr, amount);
     }
 
     function recoverMaker(Offer.Data memory offer, bytes memory signature) internal view returns (address) {
