@@ -81,10 +81,12 @@ contract Hackabet is Ownable, EIP712 {
 
         contr = contractFromOfferHash(hashVal);
 
+        uint256 id;
+
         if (contr == address(0)) {
-            contr = createAndTake(hashVal, offer, taker, amount);
+            (contr, id) = createAndTake(hashVal, offer, maker, taker, amount);
         } else {
-            IBinaryBet(contr).take(taker, amount, offer.volume, offer.details);
+            id = IBinaryBet(contr).take(taker, amount);
         }
 
         require(amount <= users[maker].availableUSD, "collateral not available");
@@ -120,13 +122,13 @@ contract Hackabet is Ownable, EIP712 {
     function createAndTake(
         bytes32 hashVal,
         Offer.Data memory offer,
+        address maker,
         address taker,
         uint256 amount
-    ) internal returns (address) {
+    ) internal returns (address, uint256) {
         address newContr = Clones.cloneDeterministic(betImplementation, hashVal);
+        uint256 id = IBinaryBet(newContr).initAndTake(maker, taker, amount, offer.volume, offer.details);
 
-        IBinaryBet(newContr).initAndTake(taker, amount, offer.volume, offer.details);
-
-        return newContr;
+        return (newContr, id);
     }
 }
