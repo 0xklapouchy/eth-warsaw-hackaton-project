@@ -5,22 +5,19 @@ pragma solidity 0.8.15;
 library Bet {
     struct Details {
         bool up;
-        uint32 price;
-        uint32 period;
-        uint32 window;
+        uint256 price;
+        uint256 period;
+        uint256 window;
     }
 
     function unpackBetDetails(bytes calldata details) internal pure returns (Details memory out) {
-        require(details.length == 13, "Invalid details length");
-        bytes1 up = details[0];
-        require((up == 0) || (up == bytes1(uint8(1))), "Invalid bool encoding");
-        out.up = bool(up == bytes1(uint8(1)));
-
+        require(details.length == 128, "Invalid details length");
         // solhint-disable no-inline-assembly
         assembly {
-            calldatacopy(add(out, sub(0x40, 4)), add(details.offset, 1), 4) // price
-            calldatacopy(add(out, sub(0x60, 4)), add(details.offset, 5), 4) // period
-            calldatacopy(add(out, sub(0x80, 4)), add(details.offset, 9), 4) // window
+            calldatacopy(add(out, sub(0x20, 32)), details.offset, 32)
+            calldatacopy(add(out, sub(0x40, 32)), add(details.offset, 32), 32)
+            calldatacopy(add(out, sub(0x60, 32)), add(details.offset, 64), 32)
+            calldatacopy(add(out, sub(0x80, 32)), add(details.offset, 96), 32)
         }
     }
 
