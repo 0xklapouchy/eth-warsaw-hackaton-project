@@ -113,6 +113,13 @@ if (infuraApiKey && mnemonic) {
     },
   };
 
+  networks.goerli = {
+    url: `https://goerli.infura.io/v3/${infuraApiKey}`,
+    accounts: {
+      mnemonic,
+    },
+  };
+
   networks.ropsten = {
     url: `https://ropsten.infura.io/v3/${infuraApiKey}`,
     accounts: {

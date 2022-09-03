@@ -9,6 +9,7 @@
     "coverage": "hardhat coverage --solcoverjs ./.solcover.js --temp artifacts --testfiles \"./test/**/*.ts\"",
     "deploy": "hardhat deploy --write true --network",
     "deploy:hardhat": "hardhat deploy --write true --network hardhat --tags",
+    "deploy:goerli": "hardhat deploy --write true --network goerli --tags",
     "verify": "hardhat etherscan-verify --license GPL-3.0 --solc-input --network",
     "test": "hardhat test"
   },
