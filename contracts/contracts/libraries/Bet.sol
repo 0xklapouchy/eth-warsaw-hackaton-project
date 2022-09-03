@@ -12,9 +12,9 @@ library Bet {
 
     function unpackBetDetails(bytes calldata details) internal pure returns (Details memory out) {
         require(details.length == 13, "Invalid details length");
-        bytes1 upEnc = details[0];
-        require((upEnc == 0) || (upEnc == bytes1(uint8(1))), "Invalid bool encoding");
-        out.up = bool(upEnc == bytes1(uint8(1)));
+        bytes1 up = details[0];
+        require((up == 0) || (up == bytes1(uint8(1))), "Invalid bool encoding");
+        out.up = bool(up == bytes1(uint8(1)));
 
         // solhint-disable no-inline-assembly
         assembly {
